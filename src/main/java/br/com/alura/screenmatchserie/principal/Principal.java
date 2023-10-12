@@ -3,12 +3,15 @@ package br.com.alura.screenmatchserie.principal;
 import br.com.alura.screenmatchserie.model.DadosEpisodio;
 import br.com.alura.screenmatchserie.model.DadosSerie;
 import br.com.alura.screenmatchserie.model.DadosTemporada;
+import br.com.alura.screenmatchserie.model.Episodio;
 import br.com.alura.screenmatchserie.service.ConsumoApi;
 import br.com.alura.screenmatchserie.service.ConverteDados;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 public class Principal {
     private Scanner leitura = new Scanner(System.in);
@@ -28,13 +31,7 @@ public class Principal {
         DadosSerie dadosSerie = conversor.obterDados(json, DadosSerie.class);
         System.out.println(dadosSerie);
 
-
-
-//        //Episodio
-//        var jsonEpisodio = consumoApi.obterDados("https://www.omdbapi.com/?t=gilmore+girls&season=1&episode=2&apikey=6585022c");
-//        DadosEpisodio dadosEpisodio = conversor.obterDados(jsonEpisodio, DadosEpisodio.class);
-//        System.out.println(dadosEpisodio);
-
+        //
 
         List<DadosTemporada> temporadas = new ArrayList<>();
         //Temporada
@@ -45,18 +42,33 @@ public class Principal {
         }
         temporadas.forEach(System.out::println);
 
-//        for (int i=0; i < dadosSerie.totalTemporadas(); i++) {
-//            List<DadosEpisodio> episodiosTemporada = temporadas.get(i).episodios();
-//            for (int j=0; j<episodiosTemporada.size(); j++) {
-//                System.out.println(episodiosTemporada.get(j).titulo());
-//            }
-//        }
+        //
 
         temporadas.forEach(t ->
                 t.episodios().forEach(e ->
                         System.out.println(e.titulo())
                 )
         );
+
+        List<DadosEpisodio> dadosEpisodios = temporadas.stream()
+                .flatMap(t -> t.episodios().stream())
+                .collect(Collectors.toList());
+
+        dadosEpisodios.stream()
+                .filter(e -> !e.avaliacao().equalsIgnoreCase("N/A"))
+                .sorted(Comparator.comparing(DadosEpisodio::avaliacao).reversed())
+                .limit(5)
+                .forEach(System.out::println);
+
+
+        //
+        List<Episodio> episodios = temporadas.stream()
+                .flatMap(t -> t.episodios().stream()
+                        .map(d -> new Episodio(t.numero(), d))
+                ).collect(Collectors.toList());
+
+        episodios.forEach(System.out::println);
+
     }
 
 }
