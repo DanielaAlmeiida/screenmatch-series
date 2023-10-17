@@ -78,7 +78,7 @@ public class Principal {
 
 
 
-        //Busca o primeiro título do episodio encontrado //HJJJJJJJJ
+        //Busca o primeiro título do episodio encontrado
         System.out.println("Digite o trecho do titulo do episódio:");
         var trechoTitulo = leitura.nextLine();
         Optional<Episodio> episodioBuscado = episodios.stream()
