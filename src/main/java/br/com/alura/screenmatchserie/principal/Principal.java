@@ -9,14 +9,12 @@ import br.com.alura.screenmatchserie.service.ConverteDados;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Principal {
     private Scanner leitura = new Scanner(System.in);
+
     private final String ENDERECO = "https://www.omdbapi.com/?t=";
     private final String API_KEY = "&apikey=6585022c";
 
@@ -35,14 +33,15 @@ public class Principal {
 
 
 
-        List<DadosTemporada> temporadas = new ArrayList<>();
         //Immprime dados de cada Temporada
+        List<DadosTemporada> temporadas = new ArrayList<>();
         for (int i=1; i<= dadosSerie.totalTemporadas(); i++) {
             var jsonTemporada = consumoApi.obterDados(ENDERECO + nomeSerie.replace(" ", "+") + "&season=" + i + API_KEY);
             DadosTemporada dadosTemporada = conversor.obterDados(jsonTemporada, DadosTemporada.class);
             temporadas.add(dadosTemporada);
         }
         temporadas.forEach(System.out::println);
+
 
 
         //Imprime títulos dos Episódios
@@ -53,7 +52,8 @@ public class Principal {
         );
 
 
-        //Para imprimir os 5 melhores Episódios
+
+        //Imprime os 5 melhores Episódios
         List<DadosEpisodio> dadosEpisodios = temporadas.stream()
                 .flatMap(t -> t.episodios().stream())
                 .collect(Collectors.toList());
@@ -62,7 +62,10 @@ public class Principal {
                 .filter(e -> !e.avaliacao().equalsIgnoreCase("N/A"))
                 .sorted(Comparator.comparing(DadosEpisodio::avaliacao).reversed())
                 .limit(5)
+                .map(e -> e.titulo().toUpperCase())
+                //.peek(e -> System.out.println("Mapeamento: " + e))
                 .forEach(System.out::println);
+
 
 
         //Imprime todos os episódios com sua temporada
@@ -72,6 +75,22 @@ public class Principal {
                 ).collect(Collectors.toList());
 
         episodios.forEach(System.out::println);
+
+
+
+        //Busca o primeiro título do episodio encontrado //HJJJJJJJJ
+        System.out.println("Digite o trecho do titulo do episódio:");
+        var trechoTitulo = leitura.nextLine();
+        Optional<Episodio> episodioBuscado = episodios.stream()
+                .filter(e -> e.getTitulo().toUpperCase().contains(trechoTitulo.toUpperCase()))
+                .findFirst();
+        if(episodioBuscado.isPresent()) {
+            System.out.println("Episodio encontrado!! \n " +
+                    "Temporada: " + episodioBuscado.get().getTemporada());
+        } else {
+            System.out.println("Episódio não encontrado!");
+        }
+
 
 
         //Imprime todos os episódios a partir de um determinado Ano
@@ -92,6 +111,26 @@ public class Principal {
                                 " | Episódio: " + e.getTitulo() +
                                 " | Data lançamento: " + e.getDataLancamento().format(dataFormatador)
                 ));
+
+
+
+        //Imprime a avaliação de cada temporada
+        Map<Integer, Double> avaliacoesPorTemporada = episodios.stream()
+                .filter(e -> e.getAvaliacao() > 0.0)
+                .collect(Collectors.groupingBy(Episodio::getTemporada,
+                        Collectors.averagingDouble(Episodio::getAvaliacao)));
+        System.out.println(avaliacoesPorTemporada);
+
+
+
+        //Imprime estatísticas
+        DoubleSummaryStatistics est = episodios.stream()
+                .filter(e -> e.getAvaliacao() > 0.0)
+                .collect(Collectors.summarizingDouble(Episodio::getAvaliacao));
+        System.out.println("Média: " + est.getAverage());
+        System.out.println("Melhor episódio: " + est.getMax());
+        System.out.println("Pior episódio: " + est.getMin());
+        System.out.println("Quantidade de episódios avaliados: " + est.getCount());
 
     }
 
