@@ -6,6 +6,8 @@ public enum Categoria {
     COMEDIA("Comedy"),
     DRAMA("Drama"),
     CRIME("Crime"),
+    AVENTURA("Adventure"),
+    ANIMACAO("Animation"),
     SUSPENSE("Suspense"),
     TERROR("Horror");
 
