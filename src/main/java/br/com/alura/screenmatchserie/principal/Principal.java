@@ -1,9 +1,9 @@
 package br.com.alura.screenmatchserie.principal;
 
-import br.com.alura.screenmatchserie.model.Categoria;
 import br.com.alura.screenmatchserie.model.DadosSerie;
 import br.com.alura.screenmatchserie.model.DadosTemporada;
 import br.com.alura.screenmatchserie.model.Serie;
+import br.com.alura.screenmatchserie.repository.SerieRepository;
 import br.com.alura.screenmatchserie.service.ConsumoApi;
 import br.com.alura.screenmatchserie.service.ConverteDados;
 
@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
-import java.util.stream.Collectors;
 
 public class Principal {
     private Scanner leitura = new Scanner(System.in);
@@ -19,10 +18,16 @@ public class Principal {
     private ConverteDados conversor = new ConverteDados();
     private final String ENDERECO = "https://www.omdbapi.com/?t=";
     private final String API_KEY = "&apikey=6585022c";
+    private SerieRepository serieRepository;
 
     //"https://www.omdbapi.com/?t=gilmore+girls&apikey=6585022c");
 
+
     private List<DadosSerie> dadosSeries = new ArrayList<>();
+
+    public Principal(SerieRepository serieRepository) {
+        this.serieRepository = serieRepository;
+    }
 
     public void exibeMenu() {
         var opcao = -1;
@@ -61,7 +66,8 @@ public class Principal {
 
     private void buscarSerieWeb() {
         DadosSerie dados = getDadosSerie();
-        dadosSeries.add(dados);
+        Serie serie = new Serie(dados);
+        serieRepository.save(serie);
         System.out.println(dados);
     }
 
@@ -86,15 +92,10 @@ public class Principal {
     }
 
     private void listarSeriesBuscadas() {
-        List<Serie> series = new ArrayList<>();
-        series = dadosSeries.stream()
-                        .map(d -> new Serie(d))
-                                .collect(Collectors.toList());
-
+        List<Serie> series = serieRepository.findAll();
         series.stream()
                 .sorted(Comparator.comparing(Serie::getGenero))
                 .forEach(System.out::println);
-
     }
 
 

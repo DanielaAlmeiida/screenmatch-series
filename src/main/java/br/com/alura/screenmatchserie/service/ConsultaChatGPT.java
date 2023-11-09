@@ -4,7 +4,7 @@ import com.theokanning.openai.completion.CompletionRequest;
 import com.theokanning.openai.service.OpenAiService;
 
 public class ConsultaChatGPT {
-    private static final String API_KEY = "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";
+    private static final String API_KEY = System.getenv("OPENAI_APIKEY");
 
     public static String obterTraducao(String texto) {
         OpenAiService service = new OpenAiService(API_KEY);
