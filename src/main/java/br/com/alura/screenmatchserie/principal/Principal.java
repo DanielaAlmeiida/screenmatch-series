@@ -36,7 +36,7 @@ public class Principal {
                     5 - Buscar série(s) por ator
                     6 - Buscar top 5 séries
                     7 - Buscar séries por gênero
-                    8 - Buscar séries bem avaliadas pela quantidade de temporadas
+                    8 - Buscar séries por quantidade de temporadas e avaliação
                     
                     0 - Sair                                 
                     """;
@@ -68,7 +68,7 @@ public class Principal {
                     buscarSeriesPorCategoria();
                     break;
                 case 8:
-                    buscarSeriesPorQuantidadeTemporadas();
+                    buscarSeriesPorQuantidadeTemporadasEAvaliacao();
                     break;
                 case 0:
                     System.out.println("Saindo...");
@@ -106,7 +106,13 @@ public class Principal {
             List<DadosTemporada> temporadas = new ArrayList<>();
 
             for (int i = 1; i <= serieEncontrada.getTotalTemporadas(); i++) {
-                var jsonTemporada = consumoApi.obterDados(ENDERECO + serieEncontrada.getTitulo().replace(" ", "+") + "&season=" + i + API_KEY);
+                var jsonTemporada = consumoApi.obterDados(
+                        ENDERECO
+                                + serieEncontrada.getTitulo().replace(" ", "+")
+                                + "&season="
+                                + i
+                                + API_KEY
+                );
                 DadosTemporada dadosTemporada = conversor.obterDados(jsonTemporada, DadosTemporada.class);
                 temporadas.add(dadosTemporada);
             }
@@ -169,21 +175,24 @@ public class Principal {
     private void buscarSeriesPorCategoria() {
         System.out.println("Deseja buscar séries de qual gênero? ");
         var nomeGenero = leitura.nextLine();
-        Categoria categoria = Categoria.fromString(nomeGenero);
+        Categoria categoria = Categoria.fromPortugues(nomeGenero);
         List<Serie> seriesPorCategoria = serieRepository.findByGenero(categoria);
         System.out.println("Séries da categoria " + nomeGenero);
         seriesPorCategoria.forEach(System.out::println);
     }
 
-    private void buscarSeriesPorQuantidadeTemporadas() {
+    private void buscarSeriesPorQuantidadeTemporadasEAvaliacao() {
         System.out.println("Até quantas temporadas você quer que a série tenha?");
         var qntdTemporadas = leitura.nextInt();
 
-        List<Serie> seriesPorQuantidadeTemporadas = serieRepository.
-                findByTotalTemporadasLessThanEqualAndAvaliacaoGreaterThanEqual(qntdTemporadas, 8.00);
+        System.out.println("A partir de qual avaliação?");
+        var avaliacao = leitura.nextDouble();
 
-        System.out.println("Séries com até " + qntdTemporadas + " temporadas e avaliação maior que 8:");
-        seriesPorQuantidadeTemporadas.forEach(System.out::println);
+        List<Serie> seriesPorQuantidadeTemporadasEAvaliacao = serieRepository
+                .seriesPorTemporadaEAValiacao(qntdTemporadas, avaliacao);
+
+        System.out.println("Séries com até " + qntdTemporadas + " temporadas e avaliação maior que " + avaliacao + ":");
+        seriesPorQuantidadeTemporadasEAvaliacao.forEach(System.out::println);
 
     }
 }
