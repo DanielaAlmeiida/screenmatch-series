@@ -18,6 +18,8 @@ public class Principal {
     private List<DadosSerie> dadosSeries = new ArrayList<>();
     private List<Serie> series = new ArrayList<>();
 
+    private Optional<Serie> serieBusca;
+
     //"https://www.omdbapi.com/?t=gilmore+girls&apikey=6585022c");
 
 
@@ -38,6 +40,7 @@ public class Principal {
                     7 - Buscar séries por gênero
                     8 - Buscar séries por quantidade de temporadas e avaliação
                     9 - Buscar episódios por trecho
+                    10 - Buscar top 5 episódios de uma série
                     
                     0 - Sair                                 
                     """;
@@ -74,6 +77,9 @@ public class Principal {
                 case 9:
                     buscarEpisodioPorTrecho();
                     break;
+                case 10:
+                    topEpisodiosPorSerie();
+                    break;
                 case 0:
                     System.out.println("Saindo...");
                     break;
@@ -82,6 +88,7 @@ public class Principal {
             }
         }
     }
+
 
     private void buscarSerieWeb() {
         DadosSerie dados = getDadosSerie();
@@ -145,10 +152,10 @@ public class Principal {
         System.out.println("Escolha uma série pelo nome");
         var nomeSerie = leitura.nextLine();
 
-        Optional<Serie> serieBuscada = serieRepository.findByTituloContainingIgnoreCase(nomeSerie);
+        serieBusca = serieRepository.findByTituloContainingIgnoreCase(nomeSerie);
 
-        if (serieBuscada.isPresent()) {
-            System.out.println("Dados da série: " + serieBuscada.get());
+        if (serieBusca.isPresent()) {
+            System.out.println("Dados da série: " + serieBusca.get());
         } else {
             System.out.println("Série não encontrada.");
         }
@@ -214,4 +221,22 @@ public class Principal {
                                 " - Episódio: " + e.getNumeroEpisodio()+ " - " + e.getTitulo())
                 );
     }
+
+    private void topEpisodiosPorSerie() {
+        buscarSeriePorTitulo();
+        if (serieBusca.isPresent()) {
+            Serie serie = serieBusca.get();
+
+            List<Episodio> top5Episodios = serieRepository.topEpisodiosPorSerie(serie);
+
+            System.out.println("Top 5 melhores episódios da série: " + serie.getTitulo());
+            top5Episodios.forEach(e ->
+                    System.out.println(
+                            "Avaliação: " + e.getAvaliacao() +
+                                    " - Temporada: " + e.getTemporada()+
+                                    " - Episódio: " + e.getNumeroEpisodio()+ " - " + e.getTitulo())
+            );
+        }
+    }
+
 }
