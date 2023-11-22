@@ -36,11 +36,12 @@ public class Principal {
                     3 - Listar séries buscadas
                     4 - Buscar série por titulo
                     5 - Buscar série(s) por ator
-                    6 - Buscar top 5 séries
+                    6 - Top 5 séries
                     7 - Buscar séries por gênero
                     8 - Buscar séries por quantidade de temporadas e avaliação
                     9 - Buscar episódios por trecho
                     10 - Buscar top 5 episódios de uma série
+                    11 - Buscar episódios a partir de uma data
                     
                     0 - Sair                                 
                     """;
@@ -79,6 +80,9 @@ public class Principal {
                     break;
                 case 10:
                     topEpisodiosPorSerie();
+                    break;
+                case 11:
+                    buscarEpisodiosAposUmaData();
                     break;
                 case 0:
                     System.out.println("Saindo...");
@@ -226,7 +230,6 @@ public class Principal {
         buscarSeriePorTitulo();
         if (serieBusca.isPresent()) {
             Serie serie = serieBusca.get();
-
             List<Episodio> top5Episodios = serieRepository.topEpisodiosPorSerie(serie);
 
             System.out.println("Top 5 melhores episódios da série: " + serie.getTitulo());
@@ -236,6 +239,22 @@ public class Principal {
                                     " - Temporada: " + e.getTemporada()+
                                     " - Episódio: " + e.getNumeroEpisodio()+ " - " + e.getTitulo())
             );
+        }
+    }
+
+    private void buscarEpisodiosAposUmaData() {
+        buscarSeriePorTitulo();
+        if (serieBusca.isPresent()) {
+            Serie serie = serieBusca.get();
+
+            System.out.println("Digite o ano limite de lançamento");
+            var anoLancamento = leitura.nextInt();
+            leitura.nextLine();
+
+            List<Episodio> episodiosAno = serieRepository.episodiosSeriePorAno(serie, anoLancamento);
+
+            System.out.println("Filtro de episódios de " + serie.getTitulo() + " a partir do ano " + anoLancamento + ":");
+            episodiosAno.forEach(System.out::println);
         }
     }
 
