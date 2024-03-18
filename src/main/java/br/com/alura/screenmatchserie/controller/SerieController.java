@@ -23,7 +23,6 @@ public class SerieController {
         return  serieService.obterTodasAsSeries();
     }
 
-
     @GetMapping("/top5")
     public List<SerieDTO> obterTop5Series() {
         return serieService.obterTop5Series();
@@ -32,6 +31,11 @@ public class SerieController {
     @GetMapping("/lancamentos")
     public List<SerieDTO> obterLancamentos() {
         return serieService.obterLancamentos();
+    }
+
+    @GetMapping("/categoria/{genero}")
+    public List<SerieDTO> obterSeriesPorCategoria(@PathVariable String genero) {
+        return serieService.obterSeriesPorCategoria(genero);
     }
 
     @GetMapping("/{id}")
@@ -49,9 +53,9 @@ public class SerieController {
         return serieService.obterTemporadasPorNumero(id, numero);
     }
 
-    @GetMapping("/categoria/{genero}")
-    public List<SerieDTO> obterSeriesPorCategoria(@PathVariable String genero) {
-        return serieService.obterSeriesPorCategoria(genero);
+    @GetMapping("/{id}/temporadas/top")
+    public List<EpisodioDTO> obterTop5Episodios(@PathVariable Long id) {
+        return serieService.obterTop5EpisodiosPorSerie(id);
     }
 
 }

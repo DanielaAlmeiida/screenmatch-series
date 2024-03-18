@@ -3,6 +3,7 @@ package br.com.alura.screenmatchserie.service;
 import br.com.alura.screenmatchserie.dto.EpisodioDTO;
 import br.com.alura.screenmatchserie.dto.SerieDTO;
 import br.com.alura.screenmatchserie.model.Categoria;
+import br.com.alura.screenmatchserie.model.Episodio;
 import br.com.alura.screenmatchserie.model.Serie;
 import br.com.alura.screenmatchserie.repository.SerieRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,24 +19,30 @@ public class SerieService {
     @Autowired
     private SerieRepository serieRepository;
 
-    public List<SerieDTO> converteDados(List<Serie> series) {
+    public List<SerieDTO> converteDadosSerie(List<Serie> series) {
         return series
                 .stream()
                 .map(s -> new SerieDTO(s.getId(), s.getTitulo(), s.getTotalTemporadas(), s.getAvaliacao(), s.getGenero(), s.getAtores(), s.getPoster(), s.getSinopse()))
                 .collect(Collectors.toList());
+    }
 
+    public List<EpisodioDTO> converteDadosEpisodio(List<Episodio> episodios) {
+        return episodios
+                .stream()
+                .map( e -> new EpisodioDTO(e.getTemporada(), e.getTitulo(), e.getNumeroEpisodio()))
+                .collect(Collectors.toList());
     }
 
     public List<SerieDTO> obterTodasAsSeries() {
-        return converteDados(serieRepository.findAll());
+        return converteDadosSerie(serieRepository.findAll());
     }
 
     public List<SerieDTO> obterTop5Series() {
-        return converteDados(serieRepository.findTop5ByOrderByAvaliacaoDesc());
+        return converteDadosSerie(serieRepository.findTop5ByOrderByAvaliacaoDesc());
     }
 
     public List<SerieDTO> obterLancamentos() {
-        return converteDados(serieRepository.encontrarEpisodiosMaisRecentes());
+        return converteDadosSerie(serieRepository.encontrarEpisodiosMaisRecentes());
     }
 
     public SerieDTO obterPorId(Long id) {
@@ -53,23 +60,22 @@ public class SerieService {
 
         if (serie.isPresent()) {
             Serie s = serie.get();
-            return s.getEpisodios()
-                    .stream()
-                    .map( e -> new EpisodioDTO(e.getTemporada(), e.getTitulo(), e.getNumeroEpisodio()))
-                    .collect(Collectors.toList());
+            return converteDadosEpisodio(s.getEpisodios());
         }
         return null;
     }
 
     public List<EpisodioDTO> obterTemporadasPorNumero(Long id, Long numero) {
-        return serieRepository.obterEpisodiosPorTemporada(id, numero)
-                .stream()
-                .map( e -> new EpisodioDTO(e.getTemporada(), e.getTitulo(), e.getNumeroEpisodio()))
-                .collect(Collectors.toList());
+        return converteDadosEpisodio(serieRepository.obterEpisodiosPorTemporada(id, numero));
     }
 
     public List<SerieDTO> obterSeriesPorCategoria(String genero) {
         Categoria categoria = Categoria.fromPortugues(genero);
-        return converteDados(serieRepository.findByGenero(categoria));
+        return converteDadosSerie(serieRepository.findByGenero(categoria));
+    }
+
+    public List<EpisodioDTO> obterTop5EpisodiosPorSerie(Long id) {
+        Serie serie = serieRepository.findById(id).get();
+        return converteDadosEpisodio(serieRepository.topEpisodiosPorSerie(serie));
     }
 }
